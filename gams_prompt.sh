@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=test_model
-#SBATCH --output=logs/test_model-%j.out
-#SBATCH --error=logs/test_model-%j.err
+#SBATCH --job-name=gams
+#SBATCH --output=logs/gams-%j.out
+#SBATCH --error=logs/gams-%j.err
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:2
 #SBATCH --mem=128G
