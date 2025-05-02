@@ -10,5 +10,5 @@
 singularity exec --nv ../containers/container-pytorch2.6.0-transformers.sif bash -c "
 export TRANSFORMERS_CACHE=/d/hpc/projects/onj_fri/jazbeci/cache_models && \
 export CUDA_LAUNCH_BLOCKING=1 && \
-python gams_prompt_basic.py
+python gams_prompt.py
 "
