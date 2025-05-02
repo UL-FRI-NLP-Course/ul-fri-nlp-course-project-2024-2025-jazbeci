@@ -5,7 +5,7 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:2
 #SBATCH --mem=128G
-#SBATCH --time=06:00:00
+#SBATCH --time=02:00:00
 
 singularity exec --nv ../containers/container-pytorch2.6.0-transformers.sif bash -c "
 export TRANSFORMERS_CACHE=/d/hpc/projects/onj_fri/jazbeci/cache_models && \
