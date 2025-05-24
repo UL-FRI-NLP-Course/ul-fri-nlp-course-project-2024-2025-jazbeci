@@ -13,6 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor
+import os
 
 
 def lemma_string(doc):
@@ -102,7 +103,9 @@ def save_to_csv(data, file_name):
 
 def process_and_save(json_data_file_name, file_name):
     # Initialize the classla pipeline for Slovenian language
-    classla.download('sl')
+    # Only download if not present
+    if not os.path.exists(os.path.expanduser('~/.classla')):
+        classla.download('sl')
     nlp = classla.Pipeline('sl', processors='tokenize,ner,pos,lemma')
     json_data = read_json_file(json_data_file_name)
     df = make_pairs_pd(json_data, nlp)
