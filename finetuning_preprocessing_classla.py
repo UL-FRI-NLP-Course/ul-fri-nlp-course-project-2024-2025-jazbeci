@@ -13,6 +13,14 @@ import pandas as pd
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
 import logging
+import sys
+
+# Global variable for the pipeline
+nlp = None
+
+def init_pipeline():
+    global nlp
+    nlp = classla.Pipeline('sl', processors='tokenize,ner,pos,lemma')
 
 
 def lemma_string(doc):
@@ -45,16 +53,19 @@ def read_json_file(file_path):
 # 
 # we will merge the texts in the fields of the input (promet.si) to compare with output (student report) without metadata like Datum of course
 
-def process_pair(input, output_text):
-    # Each subprocess must create its own pipeline!
-    nlp = classla.Pipeline('sl', processors='tokenize,ner,pos,lemma')
+def process_pair(args):
+    input, output_text, output_path = args
+    global nlp
     try:
         input_text = ' '.join([input[key] for key in input.keys() if key != 'Datum'])
-        lem_in = lemma_string(nlp(input_text))
-        lem_out = lemma_string(nlp(output_text))
+        tokenized_input = nlp(input_text)
+        tokenized_output = nlp(output_text)
+        lem_in = lemma_string(tokenized_input)
+        lem_out = lemma_string(tokenized_output)
         cos_sim = pairwise_similarity(lem_in, lem_out)
-        lem_in_ner = lemma_string_ner(nlp(input_text))
-        lem_out_ner = lemma_string_ner(nlp(output_text))
+        lem_in_ner = lemma_string_ner(tokenized_input)
+        lem_out_ner = lemma_string_ner(tokenized_output)
+        # If both ner lemmas are empty (there is no named entity in text), we set cosine similarity to NaN
         if lem_in_ner.strip() and lem_out_ner.strip():
             try:
                 cos_sim_ner = pairwise_similarity(lem_in_ner, lem_out_ner)
@@ -64,6 +75,7 @@ def process_pair(input, output_text):
             cos_sim_ner = float('nan')
         return {
             'Datum': input.get('Datum', ''),
+            'FilePath': output_path,
             'Input': input_text,
             'Output': output_text,
             'CosineSimilarity': cos_sim,
@@ -72,6 +84,7 @@ def process_pair(input, output_text):
     except Exception as e:
         return {
             'Datum': input.get('Datum', ''),
+            'FilePath': output_path,
             'Input': '',
             'Output': '',
             'CosineSimilarity': float('nan'),
@@ -79,21 +92,20 @@ def process_pair(input, output_text):
         }
 
 
-def make_pairs_pd(json_data, n_jobs=2):
-    rows = []
+def make_pairs_pd(json_data, n_jobs=6):
+    # Collect all pairs for the whole file
+    all_pairs = []
     for item in json_data:
         if 'input' in item and 'output' in item:
             output_path = item['output']['FilePath']
             output_text = item['output']['Content'].split('\n', 1)[1]
-            inputs = [input for input in item['input'] if 'Datum' in input]
-            # Parallelize over inputs for this output
-            with ProcessPoolExecutor(max_workers=n_jobs) as executor:
-                futures = [executor.submit(process_pair, input, output_text) for input in inputs]
-                for future, input in zip(as_completed(futures), inputs):
-                    result = future.result()
-                    result['FilePath'] = output_path
-                    rows.append(result)
-    df = pd.DataFrame(rows)
+            for input in item['input']:
+                if 'Datum' in input:
+                    all_pairs.append((input, output_text, output_path))
+    # Parallelize over all pairs
+    with ProcessPoolExecutor(max_workers=n_jobs, initializer=init_pipeline) as executor:
+        results = list(executor.map(process_pair, all_pairs))
+    df = pd.DataFrame(results)
     return df
 
 def process_and_save(json_data_file_name, file_name):
@@ -101,14 +113,18 @@ def process_and_save(json_data_file_name, file_name):
     try:
         logging.info(f"Processing {json_data_file_name}")
         json_data = read_json_file(json_data_file_name)
-        df = make_pairs_pd(json_data, n_jobs=2)
+        df = make_pairs_pd(json_data, n_jobs=6)
         df.to_csv(file_name, index=False)
         logging.info(f"Data saved to {file_name}")
     except Exception as e:
         logging.error(f"Error processing {json_data_file_name}: {e}")
 
-if __name__ == "__main__":
-    with ProcessPoolExecutor(max_workers=3) as executor:
-        executor.submit(process_and_save, './Processed/input_output_all_data_2022_reduced.json', './Processed/cos_sim_2022.csv')
-        executor.submit(process_and_save, './Processed/input_output_all_data_2023_reduced.json', './Processed/cos_sim_2023.csv')
-        executor.submit(process_and_save, './Processed/input_output_all_data_2024_reduced.json', './Processed/cos_sim_2024.csv')
+if len(sys.argv) > 1:
+    year = sys.argv[1]
+else:
+    year = '2024'
+
+input_file = f'./Processed/input_output_all_data_{year}_reduced.json'
+output_file = f'./Processed/cos_sim_{year}.csv'
+
+process_and_save(input_file, output_file)
