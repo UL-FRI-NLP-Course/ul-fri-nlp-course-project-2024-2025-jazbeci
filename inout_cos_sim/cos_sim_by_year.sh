@@ -10,7 +10,7 @@ export CLASSLA_RESOURCES_DIR=/d/hpc/home/ns97321/classla_resources
 
 YEAR=$1
 
-singularity exec ../containers/singularity_python3.10_classla.sif bash -c "
+singularity exec ../../containers/singularity_python3.10_classla.sif bash -c "
 python pair.py $YEAR
 python lemmatize_classla.py $YEAR
 python cosine_similarity.py $YEAR
