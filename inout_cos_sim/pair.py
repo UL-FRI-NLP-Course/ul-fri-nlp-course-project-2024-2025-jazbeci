@@ -17,21 +17,41 @@ def read_json_file(file_path):
         data = json.load(file)
     return data
 
-
-def make_pairs_pd(json_data, n_jobs=6):
-    # Collect all pairs for the whole file
-    all_pairs = []
-    for item in json_data:
+def process_chunk(chunk):
+    pairs = []
+    for idx, item in chunk:
         if 'input' in item and 'output' in item:
             output_path = item['output']['FilePath']
-            output_text = item['output']['Content'].split('\n', 1)[1]
+            output_text = item['output']['Content'].split('\n', 1)[1] # remove first line of student report
             for input in item['input']:
                 if 'Datum' in input:
                     datum = input['Datum']
-                    input_text = ' '.join([input[key] for key in input.keys() if key != 'Datum'])
-                    all_pairs.append((datum, output_path, input_text, output_text, input, item['output']))
-    # Create a DataFrame from the collected pairs
-    df = pd.DataFrame(all_pairs, columns=['Datum', 'FilePath', 'InputText', 'OutputText', 'Input', 'Output'])
+                    input_keys = list(input.keys())
+                    not_included_keys = ['Datum', 'A2', 'B2', 'C2']
+                    for key in not_included_keys:
+                        if key in input_keys:
+                            input_keys.remove(key)
+                    if len(input_keys) == 0:
+                        continue  # Skip if no relevant input data remain
+                    input_text = ' '.join([input[key] for key in input_keys])
+                    pairs.append((idx, datum, output_path, input_text, output_text, input, item['output'], input_keys))
+    return pairs
+
+def chunkify(lst, n):
+    # lst is now a list of (idx, item)
+    return [lst[i::n] for i in range(n)]
+
+def make_pairs_pd(json_data, n_jobs=6):
+    # Add index to each item
+    indexed_data = list(enumerate(json_data))
+    all_pairs = []
+    chunks = chunkify(indexed_data, n_jobs)
+    with ProcessPoolExecutor(max_workers=n_jobs) as executor:
+        futures = [executor.submit(process_chunk, chunk) for chunk in chunks]
+        for future in futures:
+            all_pairs.extend(future.result())
+    df = pd.DataFrame(all_pairs, columns=['Index', 'Datum', 'FilePath', 'InputText', 'OutputText', 'Input', 'Output', 'IncludedInputKeys'])
+    df = df.sort_values('Index').reset_index(drop=True)
     return df
 
 def process_and_save(json_data_file_name, file_name):
