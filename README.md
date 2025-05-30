@@ -1,5 +1,7 @@
 # Natural language processing course: `Automatic generation of Slovenian traffic news for RTV Slovenija`
 
+
+
 <!-- Please, organize README and the whole structure of the repository to be self-contained and reproducible. -->
 ## Project Overview
 This project is part of the Natural language course on Faculty of Computer and Information Science of University of Ljubljana. The assignment was to automatically generate traffic news report that is read on radio every 30 minutes based on the traffic information available on promet.si. 
@@ -25,7 +27,9 @@ HPC Deployment
 
 The complete codebase and associated models are available on the SLING HPC system at:
 
-/d/hpc/projects/onj_fri/jazbeci
+```python
+  /d/hpc/projects/onj_fri/jazbeci/
+```
 
 # HPC Model Prompting Instructions
 To prompt finetuned models you need to log into SLING HPC.
