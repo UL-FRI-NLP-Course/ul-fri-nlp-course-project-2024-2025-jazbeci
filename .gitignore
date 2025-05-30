@@ -137,6 +137,6 @@ logs/
 ./data_preprocessing/inout_cos_sim/*.json
 ./data_preprocessing/Processed/*.csv
 ./data_preprocessing/Processed/*.json
-./data_preprocessing/staff_only
+./data_preprocessing/staff_only/*
 ./data_preprocessing/RTVSlo
 

@@ -25,7 +25,49 @@ HPC Deployment
 
 The complete codebase and associated models are available on the SLING HPC system at:
 
-
 /d/hpc/projects/onj_fri/jazbeci
+
+# HPC Model Prompting Instructions
+To prompt finetuned models you need to log into SLING HPC.
+The directory on HPC contains scripts to prompt four different language models.
+
+
+## Available Models
+
+
+- `LLAMA_prompt.py`
+- `finetuned_GAMS_prompt.py`
+- `finetuned_LLAMA_prompt.py`
+- `GAMS_prompt.py`
+
+
+Each model script has an associated SLURM submission script used to run it on the HPC cluster.
+
+
+---
+
+
+## How to Use
+
+
+1. **Navigate to the folder** on the HPC where these scripts are stored.
+```python
+  cd /d/hpc/projects/onj_fri/jazbeci/
+```
+
+
+2. **Edit the prompt** in the Python script of your choice. 
+  Open the desired `*_prompt.py` file and locate the prompt variable. Replace it with your custom prompt text.
+
+
+3. **Run the model using SLURM** by submitting the corresponding shell script. 
+  Use the following commands depending on the model:
+
+
+  ```bash
+  sbatch LLAMA_prompt.sh
+  sbatch finetuned_GAMS_prompt.sh
+  sbatch finetuned_LLAMA_prompt.sh
+  sbatch GAMS_prompt.sh
 
 Note: If you encounter an exit code 255 error on the HPC, be aware that this is a known issue with the system.
