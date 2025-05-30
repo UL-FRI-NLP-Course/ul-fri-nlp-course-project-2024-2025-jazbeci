@@ -32,6 +32,7 @@ def process_chunk(chunk):
                         if key in input_keys:
                             input_keys.remove(key)
                     if len(input_keys) == 0:
+                        logging.warning(f"No input keys left after removing {not_included_keys} for item with Datum: {datum}")
                         continue  # Skip if no relevant input data remain
                     input_text = ' '.join([input[key] for key in input_keys])
                     pairs.append((idx, datum, output_path, input_text, output_text, input, item['output'], input_keys))
