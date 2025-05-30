@@ -1,10 +1,10 @@
 # Natural language processing course: `Automatic generation of Slovenian traffic news for RTV Slovenija`
 
 <!-- Please, organize README and the whole structure of the repository to be self-contained and reproducible. -->
-Project Overview
-This project is part of the Natural language course on Faculty of Computer and Information Science of University of Ljubljana
+## Project Overview
+This project is part of the Natural language course on Faculty of Computer and Information Science of University of Ljubljana. The assignment was to automatically generate traffic news report that is read on radio every 30 minutes based on the traffic information available on promet.si. 
 
-This repository encompasses all components of our prompt engineering and evaluation pipeline, including data preprocessing, model prompting, and automated evaluation.
+This repository includes the code for our prompt engineering and evaluation pipeline, including data preprocessing, model prompting, and automated evaluation.
 Repository Structure
 
     /report/Submission3.pdf
