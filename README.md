@@ -76,7 +76,4 @@ Each model script has an associated SLURM submission script used to run it on th
 
 Note: If you encounter an exit code 255 error on the HPC, be aware that this is a known issue with the system.
 ```
-4. **The results** can be found in directory:
-   ```bash
-  log
- ```
+4. **The results** can be found in directory logs:
